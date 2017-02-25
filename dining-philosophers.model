@@ -1,0 +1,127 @@
+type Integer: 1..5;
+
+type Fork : either {
+    Unused,
+    Used
+};
+
+type Philosopher : either {
+    Thinking {
+        wakeAt: Time
+    },
+    HasFirstFork,
+    Eating {
+        stopAt: Time
+    },
+    ReleasingFork
+};
+
+var forks : Array<Fork>[Integer];
+var philosophers : Array<Philosopher>[Integer];
+for philosopher in philosophers {
+    philosopher = Thinking {
+        wakeAt: later(urandomRange(0, 30000))
+    };
+}
+
+function getFirstForkId(pId: Integer) -> Integer {
+    // Not working: take always left fork first
+    //return pId;
+
+    // Breaking symmetry
+    if (pId == 5) {
+        return 1;
+    } else {
+        return pId;
+    }
+}
+
+function getSecondForkId(pId: Integer) -> Integer {
+    // Not working: take right fork as second
+    //return (pId % 5) + 1;
+
+    // Breaking symmetry
+    if (pId == 5) {
+        return 5;
+    } else {
+        return pId + 1;
+    }
+}
+
+rule step for pId, philosopher in philosophers {
+    match philosopher {
+        Thinking(p) {
+            if past(p.wakeAt) {
+                var forkId : Integer = getFirstForkId(pId);
+                var fork : Fork = forks[forkId];
+                match fork {
+                    Unused {
+                        forks[forkId] = Used;
+                        philosopher = HasFirstFork;
+                    }
+                    Used {
+                        // Wait, the fork is taken
+                    }
+                }
+            } else {
+                // Still thiking
+            }
+        }
+
+        HasFirstFork {
+            var forkId : Integer = getSecondForkId(pId);
+            var fork : Fork = forks[forkId];
+            match fork {
+                Unused {
+                    forks[forkId] = Used;
+                    philosopher = Eating {
+                        stopAt: later(urandomRange(5000, 30000))
+                    };
+                }
+                Used {
+                    // Wait, the fork is taken
+                }
+            }
+        }
+
+        Eating(p) {
+            if past(p.stopAt) {
+                forks[getSecondForkId(pId)] = Unused;
+                philosopher = ReleasingFork;
+            } else {
+                // Still eating
+            }
+        }
+
+        ReleasingFork {
+            forks[getFirstForkId(pId)] = Unused;
+            philosopher = Thinking {
+                wakeAt: later(urandomRange(5000, 30000))
+            };
+        }
+    }
+}
+
+// Never all waiting for second fork
+invariant noDeadlock {
+    var allWaiting : Boolean = True;
+    for philosopher in philosophers {
+        match philosopher {
+            HasFirstFork {
+                // Do nothing, is waiting for fork
+            }
+
+            // All other mean that not in deadlock
+            Thinking {
+                allWaiting = False;
+            }
+            Eating {
+                allWaiting = False;
+            }
+            ReleasingFork {
+                allWaiting = False;
+            }
+        }
+    }
+    assert !allWaiting;
+}

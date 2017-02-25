@@ -1,0 +1,17 @@
+{
+  "name": "runway-model-dining-philosophers",
+  "version": "0.1.0",
+  "description": "Dining philosophers problem in Runway",
+  "keywords": [
+    "runway"
+  ],
+  "author": "David Wobrock <david.wobrock@gmail.com>",
+  "license": "MIT",
+  "models": {
+    "main": {
+      "name": "Dining Philosphers",
+      "spec": "dining-philosophers.model",
+      "view": "dining-philosophers.js"
+    }
+  }
+}
