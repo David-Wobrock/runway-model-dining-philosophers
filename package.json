@@ -11,7 +11,8 @@
     "main": {
       "name": "Dining Philosphers",
       "spec": "dining-philosophers.model",
-      "view": "dining-philosophers.js"
+      "view": "dining-philosophers.js",
+      "clock": "ms"
     }
   }
 }
