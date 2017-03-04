@@ -2,14 +2,6 @@
 
 let d3 = require('d3');
 
-class Fork {
-    take() {
-    }
-
-    release() {
-    }
-}
-
 let View = function(controller, svg, module) {
     let model = module.env;
     svg = d3.select(svg)
